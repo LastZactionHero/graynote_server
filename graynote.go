@@ -15,7 +15,7 @@ var db *sql.DB
 var sessionStore = sessions.NewCookieStore([]byte("07cbdb8d50b4a4b588110dc9ec03c0fc"))
 
 func main() {
-	db, _ = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/graynote")
+	db, _ = sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/graynote")
 	//checkErr(err, "sql.Open failed")
 	//defer db.Close()
 
@@ -39,7 +39,7 @@ func main() {
 	r.HandleFunc("/notes/{id:[0-9]+}", noteDeleteHandler).Methods("DELETE")
 
 	http.Handle("/", r)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8181", nil)
 }
 
 func checkErr(err error, msg string) {

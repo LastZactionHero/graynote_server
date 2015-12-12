@@ -20,6 +20,9 @@ type userLoginSuccessResponse struct {
 }
 
 func userRegisterHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
 	err := r.ParseForm()
 	if err != nil {
 		// Handle Error
@@ -68,6 +71,7 @@ func userRegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 func userLoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
 
 	fmt.Println("userLoginHandler")
 	err := r.ParseForm()
