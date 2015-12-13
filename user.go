@@ -34,7 +34,12 @@ func createUser(userParams *UserRegisterForm) *User {
 }
 
 func findUserByID(userID int64) *User {
-	rows, _ := db.Query("SELECT * FROM users WHERE id=?", userID)
+	rows, err := db.Query("SELECT * FROM users WHERE id=?", userID)
+	if err != nil {
+		checkErr(err, "findUserByID")
+	} else {
+		defer rows.Close()
+	}
 
 	var user *User
 
@@ -45,7 +50,12 @@ func findUserByID(userID int64) *User {
 }
 
 func findUserByEmail(email string) *User {
-	rows, _ := db.Query("SELECT * FROM users WHERE email=?", email)
+	rows, err := db.Query("SELECT * FROM users WHERE email=?", email)
+	if err != nil {
+		checkErr(err, "findUserByEmail")
+	} else {
+		defer rows.Close()
+	}
 
 	var user *User
 
@@ -56,7 +66,12 @@ func findUserByEmail(email string) *User {
 }
 
 func findUserByAuthToken(token string) *User {
-	rows, _ := db.Query("SELECT * FROM users WHERE auth_token=?", token)
+	rows, err := db.Query("SELECT * FROM users WHERE auth_token=?", token)
+	if err != nil {
+		checkErr(err, "findUserByAuthToken")
+	} else {
+		defer rows.Close()
+	}
 
 	var user *User
 

@@ -15,11 +15,14 @@ var db *sql.DB
 var sessionStore = sessions.NewCookieStore([]byte("07cbdb8d50b4a4b588110dc9ec03c0fc"))
 
 func main() {
-	db, _ = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/graynote")
-	//checkErr(err, "sql.Open failed")
-	//defer db.Close()
+	var err error
+	db, err = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/graynote")
+	db.SetMaxIdleConns(10000)
+	db.SetMaxOpenConns(10000)
+	checkErr(err, "sql.Open failed")
+	defer db.Close()
 
-	err := db.Ping()
+	err = db.Ping()
 	checkErr(err, "db ping failed")
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS notes (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, user_id integer, title varchar(255), body text)")

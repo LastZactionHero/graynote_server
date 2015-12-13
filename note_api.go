@@ -157,6 +157,9 @@ func noteUpdateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	apiApplyCorsHeaders(w, r)
+
 	// Authenticate
 	user := apiAuthenticateUser(r)
 	if user == nil {
@@ -176,6 +179,7 @@ func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	note.Destroy()
+	w.Write([]byte("{}"))
 }
 
 func noteJSON(note *Note) []byte {
