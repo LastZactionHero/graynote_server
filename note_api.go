@@ -21,6 +21,9 @@ type noteSuccessResponse struct {
 }
 
 func noteIndexHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	apiApplyCorsHeaders(w, r)
+
 	// Authenticate
 	user := apiAuthenticateUser(r)
 	if user == nil {
@@ -33,6 +36,9 @@ func noteIndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func noteCreateHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	apiApplyCorsHeaders(w, r)
+
 	// Authenticate
 	user := apiAuthenticateUser(r)
 	if user == nil {
@@ -74,6 +80,9 @@ func noteCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func noteShowHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	apiApplyCorsHeaders(w, r)
+
 	// Authenticate
 	user := apiAuthenticateUser(r)
 	if user == nil {
@@ -96,6 +105,9 @@ func noteShowHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func noteUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	apiApplyCorsHeaders(w, r)
+
 	// Authenticate
 	user := apiAuthenticateUser(r)
 	if user == nil {

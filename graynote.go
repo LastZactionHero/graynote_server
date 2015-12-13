@@ -15,7 +15,7 @@ var db *sql.DB
 var sessionStore = sessions.NewCookieStore([]byte("07cbdb8d50b4a4b588110dc9ec03c0fc"))
 
 func main() {
-	db, _ = sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/graynote")
+	db, _ = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/graynote")
 	//checkErr(err, "sql.Open failed")
 	//defer db.Close()
 
@@ -29,6 +29,9 @@ func main() {
 	checkErr(err, "create table Users failed")
 
 	r := mux.NewRouter()
+	r.HandleFunc("/notes", optionsHandler).Methods("OPTIONS")
+	r.HandleFunc("/notes/{id:[0-9]+}", optionsHandler).Methods("OPTIONS")
+
 	r.HandleFunc("/users/register", userRegisterHandler).Methods("POST")
 	r.HandleFunc("/users/login", userLoginHandler).Methods("POST")
 

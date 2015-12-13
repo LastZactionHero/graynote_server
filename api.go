@@ -12,6 +12,10 @@ type APIError struct {
 	Message string
 }
 
+func optionsHandler(w http.ResponseWriter, r *http.Request) {
+	apiApplyCorsHeaders(w, r)
+}
+
 func apiErrorHandler(w http.ResponseWriter, r *http.Request, status int, errors []APIError) {
 	w.WriteHeader(status)
 
@@ -31,4 +35,11 @@ func apiAuthenticateUser(r *http.Request) *User {
 
 	token := r.Header["X-Auth-Token"][0]
 	return findUserByAuthToken(token)
+}
+
+func apiApplyCorsHeaders(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Origin, X-Auth-Token")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS")
 }
