@@ -24,9 +24,8 @@ func main() {
 	dbPass := os.Getenv("GRAYNOTE_DB_PASS")
 	dbName := os.Getenv("GRAYNOTE_DB_NAME")
 	dbConnect := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s", dbUser, dbPass, dbName)
-	fmt.Println(dbConnect)
 
-	db, err = sql.Open("mysql", "root@tcp(127.0.0.1:3306)/graynote")
+	db, err = sql.Open("mysql", dbConnect)
 	db.SetMaxIdleConns(10000)
 	db.SetMaxOpenConns(10000)
 	checkErr(err, "sql.Open failed")
