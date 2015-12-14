@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -12,11 +14,19 @@ import (
 )
 
 var db *sql.DB
-var sessionStore = sessions.NewCookieStore([]byte("07cbdb8d50b4a4b588110dc9ec03c0fc"))
+
+var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("GRAYNOTE_SESSION_KEY")))
 
 func main() {
 	var err error
-	db, err = sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/graynote")
+
+	dbUser := os.Getenv("GRAYNOTE_DB_USER")
+	dbPass := os.Getenv("GRAYNOTE_DB_PASS")
+	dbName := os.Getenv("GRAYNOTE_DB_NAME")
+	dbConnect := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s", dbUser, dbPass, dbName)
+	fmt.Println(dbConnect)
+
+	db, err = sql.Open("mysql", "root@tcp(127.0.0.1:3306)/graynote")
 	db.SetMaxIdleConns(10000)
 	db.SetMaxOpenConns(10000)
 	checkErr(err, "sql.Open failed")
