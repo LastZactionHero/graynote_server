@@ -16,6 +16,7 @@ type User struct {
 	AuthToken    string
 }
 
+// TODO: IMPROVE PASSWORD HASH
 func passwordToHash(password string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(password))

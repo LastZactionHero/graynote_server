@@ -1,6 +1,9 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+)
 
 //_, err = db.Exec("CREATE TABLE IF NOT EXISTS notes (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, user_id integer, title varchar(255), body text)")
 
@@ -42,8 +45,21 @@ func findNoteByID(noteID int64) *Note {
 	return note
 }
 
-func findNotesByUser(user *User) []*Note {
-	rows, err := db.Query("SELECT * FROM notes WHERE user_id=?", user.ID)
+func findNotesByUser(user *User, query string) []*Note {
+	var err error
+	var rows *sql.Rows
+
+	if len(query) == 0 {
+		rows, err = db.Query("SELECT * FROM notes WHERE user_id=?", user.ID)
+	} else {
+		queryFmt := fmt.Sprintf("%%%s%%", query)
+		rows, err = db.Query(
+			"SELECT * FROM notes WHERE user_id=? AND (body LIKE ? OR title LIKE ?)",
+			user.ID,
+			queryFmt,
+			queryFmt)
+	}
+
 	if err != nil {
 		checkErr(err, "findNotesByUser")
 	} else {

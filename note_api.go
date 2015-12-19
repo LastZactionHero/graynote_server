@@ -31,7 +31,11 @@ func noteIndexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notes := findNotesByUser(user)
+	err := r.ParseForm()
+	checkErr(err, "parsing form")
+	query := r.FormValue("q")
+
+	notes := findNotesByUser(user, query)
 	w.Write(notesJSON(notes))
 }
 

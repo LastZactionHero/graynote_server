@@ -18,6 +18,7 @@ var db *sql.DB
 var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("GRAYNOTE_SESSION_KEY")))
 
 func main() {
+	fmt.Println("Graynote Server")
 	var err error
 
 	dbUser := os.Getenv("GRAYNOTE_DB_USER")
