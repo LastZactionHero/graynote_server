@@ -19,28 +19,20 @@ var sessionStore = sessions.NewCookieStore([]byte(os.Getenv("GRAYNOTE_SESSION_KE
 
 func main() {
 	fmt.Println("Graynote Server")
-	var err error
+	dbSetup(
+		os.Getenv("GRAYNOTE_DB_USER"),
+		os.Getenv("GRAYNOTE_DB_PASS"),
+		os.Getenv("GRAYNOTE_DB_NAME"),
+		false)
 
-	dbUser := os.Getenv("GRAYNOTE_DB_USER")
-	dbPass := os.Getenv("GRAYNOTE_DB_PASS")
-	dbName := os.Getenv("GRAYNOTE_DB_NAME")
-	dbConnect := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s", dbUser, dbPass, dbName)
-
-	db, err = sql.Open("mysql", dbConnect)
-	db.SetMaxIdleConns(10000)
-	db.SetMaxOpenConns(10000)
-	checkErr(err, "sql.Open failed")
 	defer db.Close()
 
-	err = db.Ping()
-	checkErr(err, "db ping failed")
+	r := router()
+	http.Handle("/", r)
+	http.ListenAndServe(":8181", nil)
+}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS notes (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, user_id integer, title varchar(255), body text)")
-	checkErr(err, "create table Notes failed")
-
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, email varchar(255), password_hash varchar(255), auth_token varchar(64))")
-	checkErr(err, "create table Users failed")
-
+func router() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/notes", optionsHandler).Methods("OPTIONS")
 	r.HandleFunc("/notes/{id:[0-9]+}", optionsHandler).Methods("OPTIONS")
@@ -54,8 +46,37 @@ func main() {
 	r.HandleFunc("/notes/{id:[0-9]+}", noteUpdateHandler).Methods("PUT")
 	r.HandleFunc("/notes/{id:[0-9]+}", noteDeleteHandler).Methods("DELETE")
 
-	http.Handle("/", r)
-	http.ListenAndServe(":8181", nil)
+	return r
+}
+
+func dbSetup(dbUser string, dbPass string, dbName string, wipe bool) {
+	var err error
+
+	dbConnect := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s", dbUser, dbPass, dbName)
+
+	db, err = sql.Open("mysql", dbConnect)
+	db.SetMaxIdleConns(10000)
+	db.SetMaxOpenConns(10000)
+	checkErr(err, "sql.Open failed")
+
+	err = db.Ping()
+	checkErr(err, "db ping failed")
+
+	if wipe {
+		_, err = db.Exec("DROP TABLE IF EXISTS users")
+		checkErr(err, "drop table users")
+		_, err = db.Exec("DROP TABLE IF EXISTS notes")
+		checkErr(err, "drop table notes")
+	}
+
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS notes (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, user_id integer, title varchar(255), body text)")
+	checkErr(err, "create table Notes failed")
+
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, email varchar(255), password_hash varchar(255), auth_token varchar(64))")
+	checkErr(err, "create table Users failed")
+}
+
+func dbClear(dbUser string, dbPass string, dbName string) {
 }
 
 func checkErr(err error, msg string) {

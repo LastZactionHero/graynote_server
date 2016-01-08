@@ -26,7 +26,6 @@ func passwordToHash(password string) string {
 func createUser(userParams *UserRegisterForm) *User {
 	passwordHash := passwordToHash(userParams.Password)
 	stmt, _ := db.Prepare("INSERT users SET email=?, password_hash=?, auth_token=?")
-	fmt.Println(randomToken())
 	res, err := stmt.Exec(userParams.Email, passwordHash, randomToken())
 	checkErr(err, "createUser exec")
 	userID, _ := res.LastInsertId()

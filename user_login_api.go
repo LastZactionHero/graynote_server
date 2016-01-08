@@ -3,7 +3,6 @@ package main
 // UserRegisterForm type
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/schema"
@@ -60,7 +59,6 @@ func userRegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create user
 	user = createUser(userParams)
-	fmt.Println(user.Email)
 
 	// Success message
 	w.WriteHeader(http.StatusCreated)
@@ -73,7 +71,6 @@ func userLoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
-	fmt.Println("userLoginHandler")
 	err := r.ParseForm()
 	if err != nil {
 		// Handle Error
