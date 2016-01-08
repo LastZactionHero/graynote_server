@@ -19,3 +19,9 @@ func factoryCreateUser(email string) *User {
 	createUser(&form)
 	return findUserByEmail(email)
 }
+
+func factoryCreateShare(permissions string) *Share {
+	user := factoryCreateUser("user@site.com")
+	note := createNote(user, "title", "body")
+	return createShare(note, permissions)
+}

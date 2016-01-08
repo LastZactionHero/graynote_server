@@ -46,6 +46,9 @@ func router() *mux.Router {
 	r.HandleFunc("/notes/{id:[0-9]+}", noteUpdateHandler).Methods("PUT")
 	r.HandleFunc("/notes/{id:[0-9]+}", noteDeleteHandler).Methods("DELETE")
 
+	r.HandleFunc("/shares", shareCreateHandler).Methods("POST")
+	r.HandleFunc("/shares/{id:[A-z0-9]+}", shareDeleteHandler).Methods("DELETE")
+
 	return r
 }
 
@@ -67,6 +70,8 @@ func dbSetup(dbUser string, dbPass string, dbName string, wipe bool) {
 		checkErr(err, "drop table users")
 		_, err = db.Exec("DROP TABLE IF EXISTS notes")
 		checkErr(err, "drop table notes")
+		_, err = db.Exec("DROP TABLE IF EXISTS shares")
+		checkErr(err, "drop table shares")
 	}
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS notes (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, user_id integer, title varchar(255), body text)")
@@ -74,9 +79,9 @@ func dbSetup(dbUser string, dbPass string, dbName string, wipe bool) {
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, email varchar(255), password_hash varchar(255), auth_token varchar(64))")
 	checkErr(err, "create table Users failed")
-}
 
-func dbClear(dbUser string, dbPass string, dbName string) {
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS shares (id integer AUTO_INCREMENT NOT NULL PRIMARY KEY, auth_key varchar(255), note_id integer, permissions varchar(255))")
+	checkErr(err, "create table Shares failed")
 }
 
 func checkErr(err error, msg string) {
