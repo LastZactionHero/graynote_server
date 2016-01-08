@@ -90,18 +90,22 @@ func noteShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Authenticate
 	user := apiAuthenticateUser(r)
-	if user == nil {
+
+	// Find the note or share
+	noteIDStr := mux.Vars(r)["id"]
+	noteID, _ := strconv.ParseInt(noteIDStr, 10, 64)
+	note := findNoteByID(noteID)
+	share := findShareByAuthKey(noteIDStr)
+
+	if share != nil {
+		note = findNoteByID(int64(share.NoteID))
+	} else if user == nil {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
-	// Find the note
-	noteIDStr := mux.Vars(r)["id"]
-	noteID, _ := strconv.ParseInt(noteIDStr, 10, 64)
-	note := findNoteByID(noteID)
-
 	// Note not found or invalid owner
-	if note == nil || note.UserID != user.ID {
+	if note == nil || (user != nil && note.UserID != user.ID) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -115,18 +119,27 @@ func noteUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Authenticate
 	user := apiAuthenticateUser(r)
-	if user == nil {
+
+	// Find the note or share
+	noteIDStr := mux.Vars(r)["id"]
+	noteID, _ := strconv.ParseInt(noteIDStr, 10, 64)
+	note := findNoteByID(noteID)
+	share := findShareByAuthKey(noteIDStr)
+
+	if share != nil {
+		note = findNoteByID(int64(share.NoteID))
+	} else if user == nil {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
-	// Find the note
-	noteIDStr := mux.Vars(r)["id"]
-	noteID, _ := strconv.ParseInt(noteIDStr, 10, 64)
-	note := findNoteByID(noteID)
+	if share != nil && share.Permissions != "readwrite" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
 
 	// Note not found or invalid owner
-	if note == nil || note.UserID != user.ID {
+	if note == nil || (user != nil && note.UserID != user.ID) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

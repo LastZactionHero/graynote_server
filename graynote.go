@@ -42,8 +42,8 @@ func router() *mux.Router {
 
 	r.HandleFunc("/notes", noteIndexHandler).Methods("GET")
 	r.HandleFunc("/notes", noteCreateHandler).Methods("POST")
-	r.HandleFunc("/notes/{id:[0-9]+}", noteShowHandler).Methods("GET")
-	r.HandleFunc("/notes/{id:[0-9]+}", noteUpdateHandler).Methods("PUT")
+	r.HandleFunc("/notes/{id:[a-z0-9]+}", noteShowHandler).Methods("GET")
+	r.HandleFunc("/notes/{id:[a-z0-9]+}", noteUpdateHandler).Methods("PUT")
 	r.HandleFunc("/notes/{id:[0-9]+}", noteDeleteHandler).Methods("DELETE")
 
 	r.HandleFunc("/shares", shareCreateHandler).Methods("POST")

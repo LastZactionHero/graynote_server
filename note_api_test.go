@@ -201,6 +201,54 @@ func TestNoteShowHandlerSuccess(t *testing.T) {
 	}
 }
 
+func TestNoteShowHandlerSuccessReadShare(t *testing.T) {
+	db := testDbSetup()
+	defer db.Close()
+
+	// Create a User
+	userEmail := "user@site.com"
+	user := factoryCreateUser(userEmail)
+
+	// Create a note
+	note := createNote(user, "My Note", "Note Body!")
+	share := createShare(note, "read")
+
+	// Get the note
+	path := fmt.Sprintf("/notes/%s", share.AuthKey)
+	r, _ := http.NewRequest("GET", path, nil)
+	w := httptest.NewRecorder()
+
+	router().ServeHTTP(w, r)
+
+	if w.Code != 200 {
+		t.Errorf("Expected 200, got %q", w.Code)
+	}
+}
+
+func TestNoteShowHandlerSuccessFailInvalidShareKey(t *testing.T) {
+	db := testDbSetup()
+	defer db.Close()
+
+	// Create a User
+	userEmail := "user@site.com"
+	user := factoryCreateUser(userEmail)
+
+	// Create a note
+	note := createNote(user, "My Note", "Note Body!")
+	createShare(note, "read")
+
+	// Get the note
+	path := fmt.Sprintf("/notes/%s", "the_wrong_key")
+	r, _ := http.NewRequest("GET", path, nil)
+	w := httptest.NewRecorder()
+
+	router().ServeHTTP(w, r)
+
+	if w.Code != 404 {
+		t.Errorf("Expected 404, got %q", w.Code)
+	}
+}
+
 func TestNoteShowHandlerSuccessWithShares(t *testing.T) {
 	db := testDbSetup()
 	defer db.Close()
@@ -315,6 +363,93 @@ func TestNoteUpdateHandlerSuccess(t *testing.T) {
 	note = findNoteByID(int64(note.ID))
 	if note.Title != title || note.Body != body {
 		t.Errorf("Expected note to equal updated values")
+	}
+}
+
+func TestNoteUpdateHandlerSuccessShare(t *testing.T) {
+	db := testDbSetup()
+	defer db.Close()
+
+	// Create a User
+	userEmail := "user@site.com"
+	user := factoryCreateUser(userEmail)
+
+	// Create a note
+	note := createNote(user, "My Note", "Note Body!")
+	share := createShare(note, "readwrite")
+
+	title := "Updated Title"
+	body := "Updated Body"
+
+	// Update Notes
+	postBody := strings.NewReader(fmt.Sprintf("title=%s&body=%s", title, body))
+	path := fmt.Sprintf("/notes/%s", share.AuthKey)
+	r, _ := http.NewRequest("PUT", path, postBody)
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+	w := httptest.NewRecorder()
+
+	router().ServeHTTP(w, r)
+
+	if w.Code != 200 {
+		t.Errorf("Expected 200, got %q", w.Code)
+	}
+}
+
+func TestNoteUpdateHandlerSuccessFailReadOnlyKey(t *testing.T) {
+	db := testDbSetup()
+	defer db.Close()
+
+	// Create a User
+	userEmail := "user@site.com"
+	user := factoryCreateUser(userEmail)
+
+	// Create a note
+	note := createNote(user, "My Note", "Note Body!")
+	share := createShare(note, "read")
+
+	title := "Updated Title"
+	body := "Updated Body"
+
+	// Update Notes
+	postBody := strings.NewReader(fmt.Sprintf("title=%s&body=%s", title, body))
+	path := fmt.Sprintf("/notes/%s", share.AuthKey)
+	r, _ := http.NewRequest("PUT", path, postBody)
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+	w := httptest.NewRecorder()
+
+	router().ServeHTTP(w, r)
+
+	if w.Code != 403 {
+		t.Errorf("Expected 403, got %q", w.Code)
+	}
+}
+
+func TestNoteUpdateHandlerSuccessFailInvalidShare(t *testing.T) {
+	db := testDbSetup()
+	defer db.Close()
+
+	// Create a User
+	userEmail := "user@site.com"
+	user := factoryCreateUser(userEmail)
+
+	// Create a note
+	note := createNote(user, "My Note", "Note Body!")
+	createShare(note, "readwrite")
+
+	title := "Updated Title"
+	body := "Updated Body"
+
+	// Update Notes
+	postBody := strings.NewReader(fmt.Sprintf("title=%s&body=%s", title, body))
+	path := fmt.Sprintf("/notes/%s", "the_wrong_key")
+	r, _ := http.NewRequest("PUT", path, postBody)
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+	w := httptest.NewRecorder()
+
+	router().ServeHTTP(w, r)
+
+	if w.Code != 404 {
+		t.Errorf("Expected 404, got %q", w.Code)
 	}
 }
 
