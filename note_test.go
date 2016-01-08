@@ -109,3 +109,24 @@ func TestNoteUpdate(t *testing.T) {
 		t.Errorf("Expected body to be %q, got %q", body, updated.Body)
 	}
 }
+
+func TestNoteShares(t *testing.T) {
+	db := testDbSetup()
+	defer db.Close()
+
+	user := factoryCreateUser("user@site.com")
+	note := createNote(user, "title", "body")
+	shareA := createShare(note, "readwrite")
+	shareB := createShare(note, "read")
+
+	shares := note.Shares()
+	if len(shares) != 2 {
+		t.Errorf("Expected 2 shares, found %d", len(shares))
+	}
+	if shares[0].ID != shareA.ID {
+		t.Errorf("Expected share[0] ID to eq %q, got %q", shareA.ID, shares[0].ID)
+	}
+	if shares[1].ID != shareB.ID {
+		t.Errorf("Expected share[1] ID to eq %q, got %q", shareB.ID, shares[1].ID)
+	}
+}

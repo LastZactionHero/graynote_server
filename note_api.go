@@ -15,9 +15,10 @@ type noteRequestParameters struct {
 }
 
 type noteSuccessResponse struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	ID     int                    `json:"id"`
+	Title  string                 `json:"title"`
+	Body   string                 `json:"body"`
+	Shares []shareSuccessResponse `json:"shares"`
 }
 
 func noteIndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -187,7 +188,14 @@ func noteDeleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func noteJSON(note *Note) []byte {
-	response := noteSuccessResponse{ID: note.ID, Title: note.Title, Body: note.Body}
+	var shareResponses []shareSuccessResponse
+	for _, share := range note.Shares() {
+		shareResponses = append(
+			shareResponses,
+			shareSuccessResponse{AuthKey: share.AuthKey, NoteID: share.NoteID, Permissions: share.Permissions})
+	}
+
+	response := noteSuccessResponse{ID: note.ID, Title: note.Title, Body: note.Body, Shares: shareResponses}
 	responseJSON, _ := json.Marshal(response)
 	return responseJSON
 }

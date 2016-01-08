@@ -72,7 +72,7 @@ func findShareByAuthKey(authKey string) *Share {
 	return share
 }
 
-// Destoy a share from database
+// Destroy a share from database
 func (s Share) Destroy() {
 	stmt, err := db.Prepare("DELETE FROM shares WHERE id=?")
 	if err != nil {
@@ -98,4 +98,21 @@ func randomShareKey() string {
 	rand := rand.Int31()
 	hasher.Write([]byte(fmt.Sprintf("%d", rand)))
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func findSharesByNote(note Note) []*Share {
+	rows, err := db.Query("SELECT * FROM shares WHERE note_id=?", note.ID)
+	if err != nil {
+		checkErr(err, "find share by note id")
+	} else {
+		defer rows.Close()
+	}
+
+	var shares []*Share
+	for rows.Next() {
+		share := shareFromDbRows(rows)
+		shares = append(shares, share)
+	}
+
+	return shares
 }

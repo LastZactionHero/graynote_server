@@ -108,3 +108,8 @@ func (n Note) Destroy() {
 	_, err = stmt.Exec(n.ID)
 	checkErr(err, "exec delete note")
 }
+
+// Shares returns Shares for Note
+func (n Note) Shares() []*Share {
+	return findSharesByNote(n)
+}

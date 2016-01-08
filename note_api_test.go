@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -32,7 +33,7 @@ func TestNoteCreateHandlerSuccess(t *testing.T) {
 		t.Errorf("Expected 201, got %q", w.Code)
 	}
 
-	expectedBody := "{\"id\":1,\"title\":\"My Note!\",\"body\":\"Some exciting things are documented here.\"}"
+	expectedBody := "{\"id\":1,\"title\":\"My Note!\",\"body\":\"Some exciting things are documented here.\",\"shares\":null}"
 	if b := w.Body.String(); b != expectedBody {
 		t.Errorf("Expected %q, but got %q", expectedBody, b)
 	}
@@ -165,7 +166,7 @@ func TestNoteIndexHandler(t *testing.T) {
 	if w.Code != 200 {
 		t.Errorf("Expected code 200, got %q", w.Code)
 	}
-	expectedBody := "[{\"id\":1,\"title\":\"My Note\",\"body\":\"Note Body!\"},{\"id\":2,\"title\":\"Second Note\",\"body\":\"Second Note Body!\"}]"
+	expectedBody := "[{\"id\":1,\"title\":\"My Note\",\"body\":\"Note Body!\",\"shares\":null},{\"id\":2,\"title\":\"Second Note\",\"body\":\"Second Note Body!\",\"shares\":null}]"
 	if b := w.Body.String(); b != expectedBody {
 		t.Errorf("Expected %q, got %q", expectedBody, b)
 	}
@@ -194,9 +195,43 @@ func TestNoteShowHandlerSuccess(t *testing.T) {
 		t.Errorf("Expected 200, got %q", w.Code)
 	}
 
-	expectedBody := "{\"id\":1,\"title\":\"My Note\",\"body\":\"Note Body!\"}"
+	expectedBody := "{\"id\":1,\"title\":\"My Note\",\"body\":\"Note Body!\",\"shares\":null}"
 	if b := w.Body.String(); b != expectedBody {
 		t.Errorf("Expected %q, got %q", expectedBody, b)
+	}
+}
+
+func TestNoteShowHandlerSuccessWithShares(t *testing.T) {
+	db := testDbSetup()
+	defer db.Close()
+
+	// Create a User
+	userEmail := "user@site.com"
+	user := factoryCreateUser(userEmail)
+
+	// Create a note
+	note := createNote(user, "My Note", "Note Body!")
+
+	createShare(note, "readwrite")
+	createShare(note, "read")
+
+	// Get the note
+	path := fmt.Sprintf("/notes/%d", note.ID)
+	r, _ := http.NewRequest("GET", path, nil)
+	r.Header.Add("X-Auth-Token", user.AuthToken)
+	w := httptest.NewRecorder()
+
+	router().ServeHTTP(w, r)
+
+	if w.Code != 200 {
+		t.Errorf("Expected 200, got %q", w.Code)
+	}
+
+	b := w.Body.String()
+	expected := fmt.Sprintf(
+		"{\"id\":1,\"title\":\"My Note\",\"body\":\"Note Body!\",\"shares\":[{\"auth_key\":\"[a-f0-9]+\",\"note_id\":1,\"permissions\":\"readwrite\"},{\"auth_key\":\"[a-f0-9]+\",\"note_id\":1,\"permissions\":\"read\"}]}")
+	if match, _ := regexp.MatchString(expected, b); !match {
+		t.Errorf("Expected %q to match %q", b, expected)
 	}
 }
 
@@ -272,7 +307,7 @@ func TestNoteUpdateHandlerSuccess(t *testing.T) {
 	if w.Code != 200 {
 		t.Errorf("Expected 200, got %q", w.Code)
 	}
-	expectedBody := "{\"id\":1,\"title\":\"Updated Title\",\"body\":\"Updated Body\"}"
+	expectedBody := "{\"id\":1,\"title\":\"Updated Title\",\"body\":\"Updated Body\",\"shares\":null}"
 	if b := w.Body.String(); b != expectedBody {
 		t.Errorf("Expected %q, got %q", expectedBody, b)
 	}
