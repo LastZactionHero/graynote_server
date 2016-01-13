@@ -214,8 +214,9 @@ func TestNoteShowHandlerSuccessReadShare(t *testing.T) {
 	share := createShare(note, "read")
 
 	// Get the note
-	path := fmt.Sprintf("/notes/%s", share.AuthKey)
+	path := fmt.Sprintf("/notes/%d", note.ID)
 	r, _ := http.NewRequest("GET", path, nil)
+	r.Header.Add("X-Share-Key", share.AuthKey)
 	w := httptest.NewRecorder()
 
 	router().ServeHTTP(w, r)
@@ -238,14 +239,15 @@ func TestNoteShowHandlerSuccessFailInvalidShareKey(t *testing.T) {
 	createShare(note, "read")
 
 	// Get the note
-	path := fmt.Sprintf("/notes/%s", "the_wrong_key")
+	path := fmt.Sprintf("/notes/%d", note.ID)
 	r, _ := http.NewRequest("GET", path, nil)
+	r.Header.Add("X-Share-Key", "the_wrong_key")
 	w := httptest.NewRecorder()
 
 	router().ServeHTTP(w, r)
 
-	if w.Code != 404 {
-		t.Errorf("Expected 404, got %q", w.Code)
+	if w.Code != 403 {
+		t.Errorf("Expected 403, got %q", w.Code)
 	}
 }
 
@@ -383,8 +385,9 @@ func TestNoteUpdateHandlerSuccessShare(t *testing.T) {
 
 	// Update Notes
 	postBody := strings.NewReader(fmt.Sprintf("title=%s&body=%s", title, body))
-	path := fmt.Sprintf("/notes/%s", share.AuthKey)
+	path := fmt.Sprintf("/notes/%d", note.ID)
 	r, _ := http.NewRequest("PUT", path, postBody)
+	r.Header.Add("X-Share-Key", share.AuthKey)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
 	w := httptest.NewRecorder()
 
@@ -412,9 +415,10 @@ func TestNoteUpdateHandlerSuccessFailReadOnlyKey(t *testing.T) {
 
 	// Update Notes
 	postBody := strings.NewReader(fmt.Sprintf("title=%s&body=%s", title, body))
-	path := fmt.Sprintf("/notes/%s", share.AuthKey)
+	path := fmt.Sprintf("/notes/%d", note.ID)
 	r, _ := http.NewRequest("PUT", path, postBody)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+	r.Header.Add("X-Share-Key", share.AuthKey)
 	w := httptest.NewRecorder()
 
 	router().ServeHTTP(w, r)
@@ -441,15 +445,16 @@ func TestNoteUpdateHandlerSuccessFailInvalidShare(t *testing.T) {
 
 	// Update Notes
 	postBody := strings.NewReader(fmt.Sprintf("title=%s&body=%s", title, body))
-	path := fmt.Sprintf("/notes/%s", "the_wrong_key")
+	path := fmt.Sprintf("/notes/%d", note.ID)
 	r, _ := http.NewRequest("PUT", path, postBody)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+	r.Header.Add("X-Share-Key", "the_wrong_key")
 	w := httptest.NewRecorder()
 
 	router().ServeHTTP(w, r)
 
-	if w.Code != 404 {
-		t.Errorf("Expected 404, got %q", w.Code)
+	if w.Code != 403 {
+		t.Errorf("Expected 403, got %q", w.Code)
 	}
 }
 

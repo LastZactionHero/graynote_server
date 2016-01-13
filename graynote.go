@@ -35,7 +35,9 @@ func main() {
 func router() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/notes", optionsHandler).Methods("OPTIONS")
-	r.HandleFunc("/notes/{id:[0-9]+}", optionsHandler).Methods("OPTIONS")
+	r.HandleFunc("/notes/{id:[a-z0-9]+}", optionsHandler).Methods("OPTIONS")
+	r.HandleFunc("/shares", optionsHandler).Methods("OPTIONS")
+	r.HandleFunc("/shares/{id:[a-z0-9]+}", optionsHandler).Methods("OPTIONS")
 
 	r.HandleFunc("/users/register", userRegisterHandler).Methods("POST")
 	r.HandleFunc("/users/login", userLoginHandler).Methods("POST")
@@ -47,7 +49,7 @@ func router() *mux.Router {
 	r.HandleFunc("/notes/{id:[0-9]+}", noteDeleteHandler).Methods("DELETE")
 
 	r.HandleFunc("/shares", shareCreateHandler).Methods("POST")
-	r.HandleFunc("/shares/{id:[A-z0-9]+}", shareDeleteHandler).Methods("DELETE")
+	r.HandleFunc("/shares/{id:[a-z0-9]+}", shareDeleteHandler).Methods("DELETE")
 
 	return r
 }

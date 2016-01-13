@@ -37,6 +37,15 @@ func apiAuthenticateUser(r *http.Request) *User {
 	return findUserByAuthToken(token)
 }
 
+func apiAuthenticateShare(r *http.Request) *Share {
+	if len(r.Header["X-Share-Key"]) != 1 {
+		return nil
+	}
+
+	shareKey := r.Header["X-Share-Key"][0]
+	return findShareByAuthKey(shareKey)
+}
+
 func apiApplyCorsHeaders(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get("Origin")
 	w.Header().Set("Access-Control-Allow-Origin", origin)
